@@ -1,2 +1,16 @@
-# habit_trackerr
-Stay on top of your goals with our easy-to-use Habit Tracker app. Build positive routines, break bad habits, and track your daily progress with visual insights. Set reminders, stay consistent, and achieve personal growth—one habit at a time. Perfect for productivity, wellness, and lifestyle improvement. Start your journey today!
+# habit_tracker
+
+A new Flutter project.
+
+## Getting Started
+
+This project is a starting point for a Flutter application.
+
+A few resources to get you started if this is your first Flutter project:
+
+- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
+- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+
+For help getting started with Flutter development, view the
+[online documentation](https://docs.flutter.dev/), which offers tutorials,
+samples, guidance on mobile development, and a full API reference.
