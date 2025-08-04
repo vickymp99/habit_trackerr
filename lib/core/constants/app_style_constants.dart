@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AppStyle {
   static TextStyle appbarTitle() {
     return TextStyle(
-      fontSize: 32,
+      fontSize: 28,
       fontWeight: FontWeight.bold,
       color: Colors.black,
       fontStyle: FontStyle.italic,
@@ -29,8 +29,8 @@ class AppStyle {
     );
   }
 
-  static TextStyle hintText() {
-    return TextStyle(fontSize: 14, color: Colors.grey, letterSpacing: 1.0);
+  static TextStyle hintText({Color? color}) {
+    return TextStyle(fontSize: 14, color: color ?? Colors.grey, letterSpacing: 1.0);
   }
 
   static TextStyle buttonText() {

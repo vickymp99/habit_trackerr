@@ -13,6 +13,10 @@ class LoginLoadingState extends LoginState{
 }
 
 class LoginSuccessState extends LoginState{
+
+  // ignore_for_file: prefer_final_fields
+  bool passwordObscureText = true;
+  bool isLogin = true;
   @override
   List<Object?> get props => [];
 }

@@ -23,3 +23,21 @@ class HabitHomeErrorState extends HabitHomeState{
   @override
   List<Object?> get props => [msg];
 }
+
+class NewHabitLoadingState extends HabitHomeState{
+
+  @override
+  List<Object?> get props => [];
+}
+
+class NewHabitSuccessState extends HabitHomeState{
+  @override
+  List<Object?> get props => [];
+}
+class NewHabitErrorState extends HabitHomeState{
+  final String msg;
+  NewHabitErrorState({required this.msg});
+
+  @override
+  List<Object?> get props => [msg];
+}

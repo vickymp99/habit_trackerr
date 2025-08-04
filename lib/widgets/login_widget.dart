@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_tracker/core/constants/app_style_constants.dart';
 import 'package:habit_tracker/cubit/login_cubit.dart';
 import 'package:habit_tracker/cubit/login_state.dart';
-import 'package:habit_tracker/pages/habit_home.dart';
 
 class LoginWidget extends StatefulWidget {
   const LoginWidget({super.key});
@@ -15,9 +14,7 @@ class LoginWidget extends StatefulWidget {
 class _LoginWidgetState extends State<LoginWidget> {
   final _userNameController = TextEditingController();
   final _passWordController = TextEditingController();
-
-// ignore_for_file: prefer_final_fields
-bool _passwordObscureText = true;
+  final _currentState = LoginSuccessState();
 
   @override
   void initState() {
@@ -39,124 +36,149 @@ bool _passwordObscureText = true;
             ],
           ),
           SizedBox(height: 50.0),
-          BlocListener<LoginCubit, LoginState>(
+          BlocConsumer<LoginCubit, LoginState>(
             listener: (BuildContext context, LoginState state) {
-              if(state is LoginErrorState){
+              if (state is LoginErrorState) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                   behavior: SnackBarBehavior.floating,
+                    behavior: SnackBarBehavior.floating,
                     margin: EdgeInsets.all(8.0),
                     content: Text(state.msg),
                     duration: Duration(seconds: 1), // Optional: set duration
                   ),
                 );
               }
-
             },
-            child: Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Card(
-                      elevation: 8,
-                      shadowColor: Colors.black,
-                      color: Colors.white,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("Login", style: AppStyle.labelText()),
-                            SizedBox(height: 24.0),
-                            // user name field
-                            Text("Name", style: AppStyle.fieldLabelText()),
-                            SizedBox(height: 12.0),
-                            TextField(
-                              controller: _userNameController,
-                              decoration: InputDecoration(
-                                hintStyle: AppStyle.hintText(),
-                                contentPadding: EdgeInsets.all(4.0),
-                                prefixIcon: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.person),
-                                ),
+            buildWhen: (previous, current) => current is LoginSuccessState,
+            builder: (context, state) {
 
-                                hintText: "User Name",
-                              ),
-                            ),
-                            SizedBox(height: 24.0),
-                            // password field
-                            Text("Password",
-
-
-                                style: AppStyle.fieldLabelText()),
-                            SizedBox(height: 12.0),
-                            TextField(
-                              obscureText:_passwordObscureText ,
-                              controller: _passWordController,
-                              decoration: InputDecoration(
-                                hintText: "Password",
-                                hintStyle: AppStyle.hintText(),
-                                suffixIcon: IconButton(
-                                  onPressed: (){},
-                                  icon: Icon(_passwordObscureText ?
-                                  Icons.visibility_off : Icons.visibility),
-                                ),
-                                prefixIcon: IconButton(
-                                  onPressed: () {},
-                                  icon: Icon(Icons.password),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: ElevatedButton(
-                        onPressed: () => loginCubit.userLogin(
-                          userName: _userNameController.text,
-                          password: _passWordController.text,
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.black,
-                        ),
+              return Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Card(
+                        elevation: 8,
+                        shadowColor: Colors.black,
+                        color: Colors.white,
                         child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text("LOG IN", style: AppStyle.buttonText()),
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _currentState.isLogin ? "Login" : "Sign Up",
+                                style: AppStyle.labelText(),
+                              ),
+                              SizedBox(height: 24.0),
+                              // user name field
+                              Text("Name", style: AppStyle.fieldLabelText()),
+                              SizedBox(height: 12.0),
+                              TextField(
+                                controller: _userNameController,
+                                decoration: InputDecoration(
+                                  hintStyle: AppStyle.hintText(),
+                                  contentPadding: EdgeInsets.all(4.0),
+                                  prefixIcon: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.person),
+                                  ),
+
+                                  hintText: "User Name",
+                                ),
+                              ),
+                              SizedBox(height: 24.0),
+                              // password field
+                              Text(
+                                "Password",
+
+                                style: AppStyle.fieldLabelText(),
+                              ),
+                              SizedBox(height: 12.0),
+                              TextField(
+                                obscureText: _currentState.passwordObscureText,
+                                controller: _passWordController,
+                                decoration: InputDecoration(
+                                  hintText: "Password",
+                                  hintStyle: AppStyle.hintText(),
+                                  suffixIcon: IconButton(
+                                    onPressed: () =>
+                                        loginCubit.showHidePassword(
+                                          _currentState.passwordObscureText,
+                                          _currentState,
+                                        ),
+                                    icon: Icon(
+                                      _currentState.passwordObscureText
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                    ),
+                                  ),
+                                  prefixIcon: IconButton(
+                                    onPressed: () {},
+                                    icon: Icon(Icons.password),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    SizedBox(height: 48),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Don't have an account",
-                          style: AppStyle.normalText(),
-                        ),
-                        TextButton(
-                          onPressed: () {},
-                          child: Text(
-                            "Sign Up",
-                            style: AppStyle.normalText(
-                              fontSize: 16,
-                              color: Colors.blue,
-                              fontStyle: FontStyle.italic,
+                      SizedBox(height: 24),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: ElevatedButton(
+                          onPressed: () => loginCubit.userLoginAndSignUp(
+                            userName: _userNameController.text,
+                            password: _passWordController.text,
+                            type: _currentState.isLogin ?  LoginType.signIn : LoginType.signUp
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              _currentState.isLogin ? "LOG IN" : "Sign UP",
+                              style: AppStyle.buttonText(),
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+                      SizedBox(height: 48),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _currentState.isLogin
+                                ? "Don't have an account"
+                                : "Already have account",
+                            style: AppStyle.normalText(),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              _userNameController.text = "";
+                              _passWordController.text = "";
+                              loginCubit.loginSignup(_currentState.isLogin,_currentState);
+                            },
+                            child: Text(
+                              _currentState.isLogin ? "Sign Up" : "Log in ",
+                              style: AppStyle.normalText(
+                                fontSize: 16,
+                                color: Colors.blue,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ),
+              );
+
+            },
           ),
         ],
       ),

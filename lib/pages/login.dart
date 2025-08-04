@@ -12,6 +12,7 @@ class Login extends StatelessWidget {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: StreamBuilder(
+          key: GlobalKey(debugLabel: "login-key"),
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snap) {
             if (snap.connectionState == ConnectionState.waiting) {

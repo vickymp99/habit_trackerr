@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:habit_tracker/core/constants/app_style_constants.dart';
+import 'package:habit_tracker/main.dart';
+import 'package:habit_tracker/pages/habit_progress.dart';
 
 class YourHabitWidget extends StatelessWidget {
   const YourHabitWidget({super.key});
@@ -7,19 +11,23 @@ class YourHabitWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24.0,24.0,24.0,0.0),
+      padding: const EdgeInsets.fromLTRB(24.0, 24.0, 24.0, 0.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back)),
-              Text("Your Habits"),
-              IconButton(onPressed: () => FirebaseAuth.instance.signOut(), icon: Icon(Icons.person)),
+              Text("Your Habits", style: AppStyle.appbarTitle()),
+              IconButton(
+                onPressed: () => FirebaseAuth.instance.signOut(),
+                icon: Icon(Icons.person),
+              ),
             ],
           ),
           SizedBox(height: 24),
-          HabitList(habitList: []),
+          HabitList(),
         ],
       ),
     );
@@ -27,47 +35,82 @@ class YourHabitWidget extends StatelessWidget {
 }
 
 class HabitList extends StatelessWidget {
-  final List habitList;
-  const HabitList({required this.habitList, super.key});
+  const HabitList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: ListView.builder(
-        itemCount: 20,
-        shrinkWrap: true,
-        physics: AlwaysScrollableScrollPhysics(),
-        itemBuilder: (context, index) {
-          return Card(
-            elevation: 4.0,
-            color: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(color: Colors.grey),
-            ),
-            shadowColor: Colors.black,
-            margin: EdgeInsets.only(bottom: 16.0),
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Image.asset(""),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
+    return StreamBuilder(
+      stream: FirebaseFirestore.instance
+          .collection("habit-list")
+          .where("uId", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+          .snapshots(),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
 
-                    children: [
-                      Text("Habit Name"),
-                      SizedBox(height: 8),
-                      Text("Duration"),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+        return snap.data!.docs.isNotEmpty
+            ? Expanded(
+                child: ListView.builder(
+                  itemCount: snap.data!.docs.length,
+                  shrinkWrap: true,
+                  physics: AlwaysScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: 16.0),
+                      child: InkWell(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HabitProgress(),
+                            ),
+                          );
+                        },
+                        child: Card(
+                          elevation: 5.0,
+                          color: Colors.blueGrey.shade100,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          shadowColor: Colors.black,
+                          margin: EdgeInsets.only(bottom: 16.0),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Row(
+                              children: [
+                                // Image.asset(""),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+
+                                  children: [
+                                    Text(
+                                      snap.data!.docs[index]["title"]
+                                          .toString()
+                                          .toUpperCase(),
+                                      style: AppStyle.labelText(),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      "Duration : ${snap.data!.docs[index]["days"]} days",
+                                      style: AppStyle.hintText(
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+            : Center(child: Text("No data", style: AppStyle.labelText()));
+      },
     );
   }
 }
