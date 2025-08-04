@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:habit_tracker/core/constants/app_style_constants.dart';
 import 'package:habit_tracker/core/utils/Commonutils.dart';
 import 'package:habit_tracker/cubit/habit_home_cubit.dart';
-import 'package:intl/intl.dart';
 
 enum FieldType { number, string, date }
 
@@ -88,7 +87,7 @@ class NewHabitWidget extends StatelessWidget {
                             name: habitName,
                             desc: habitDesc,
                             days: habitDays,
-                            startDate: startDate!,
+                            startDate: startDate,
                           );
                           Navigator.pop(context);
                         },

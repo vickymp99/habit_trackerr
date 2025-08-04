@@ -1,8 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/core/constants/app_style_constants.dart';
-import 'package:habit_tracker/core/utils/Commonutils.dart';
 
 import 'package:table_calendar/table_calendar.dart';
 
