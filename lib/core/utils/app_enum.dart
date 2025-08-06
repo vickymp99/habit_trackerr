@@ -1,0 +1,1 @@
+enum ActionType { completed, notCompleted, notStart }

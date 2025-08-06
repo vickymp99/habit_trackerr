@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:habit_tracker/core/utils/app_enum.dart';
 import 'package:habit_tracker/cubit/habit_home_state.dart';
 
 class HabitHomeCubit extends Cubit<HabitHomeState> {
@@ -17,7 +18,7 @@ class HabitHomeCubit extends Cubit<HabitHomeState> {
     String localDay = days.trim();
     String endDate = DateTime.parse(
       startDate,
-    ).add(Duration(days: int.parse(days))).toString();
+    ).add(Duration(days: int.parse(days) - 1)).toString();
 
     print("$localDay $localDesc $localName $startDate");
     try {
@@ -26,7 +27,8 @@ class HabitHomeCubit extends Cubit<HabitHomeState> {
           .add({
             "title": localName,
             "description": localDesc,
-            "days": localDay,
+            "totalDays": localDay,
+            "completeDays": "0",
             "uId": FirebaseAuth.instance.currentUser!.uid,
             "startDate": startDate,
             "endDate": endDate,
@@ -35,12 +37,39 @@ class HabitHomeCubit extends Cubit<HabitHomeState> {
 
       await FirebaseFirestore.instance.collection("habit-progress").add({
         "id": docId.id,
+        "title": localName,
+        "description": localDesc,
+        "totalDays": localDay,
+        "completeDays": "0",
         "startDate": startDate,
         "endDate": endDate,
-        "completeDay": "0",
+        "date": loopDate(sDate: startDate, eDate: endDate),
       });
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  List<Map<String, String>> loopDate({
+    required String sDate,
+    required String eDate,
+  }) {
+    DateTime localSDate = DateTime.parse(sDate);
+    DateTime localEDate = DateTime.parse(eDate);
+    List<Map<String, String>> localMap = [];
+
+    print("_sdate start $localSDate");
+    print("_edate start $localEDate");
+
+    while (localSDate.isBefore(localEDate) ||
+        localSDate.isAtSameMomentAs(localEDate)) {
+      print("_sdate $localSDate");
+      localMap.add({
+        "date": localSDate.toString(),
+        "status": ActionType.notStart.name,
+      });
+      localSDate = localSDate.add(Duration(days: 1));
+    }
+    return localMap;
   }
 }

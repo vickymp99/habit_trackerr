@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_tracker/core/constants/app_style_constants.dart';
+import 'package:habit_tracker/core/utils/Commonutils.dart';
+import 'package:habit_tracker/core/utils/circular_indicator.dart';
 import 'package:habit_tracker/pages/habit_progress.dart';
 
 class YourHabitWidget extends StatelessWidget {
@@ -17,10 +19,12 @@ class YourHabitWidget extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(onPressed: () {}, icon: Icon(Icons.arrow_back)),
+              Flexible(child: SizedBox()),
               Text("Your Habits", style: AppStyle.appbarTitle()),
               IconButton(
-                onPressed: () => FirebaseAuth.instance.signOut(),
+                onPressed: () {
+                  CommonUtils.logOut(context);
+                },
                 icon: Icon(Icons.person),
               ),
             ],
@@ -35,6 +39,22 @@ class YourHabitWidget extends StatelessWidget {
 
 class HabitList extends StatelessWidget {
   const HabitList({super.key});
+
+  Future<QueryDocumentSnapshot<Map<String, dynamic>>?> _assignValue(
+    String docId,
+  ) async {
+    QueryDocumentSnapshot<Map<String, dynamic>>? data;
+    var d1 = await FirebaseFirestore.instance
+        .collection("habit-progress")
+        .get();
+    for (var s in d1.docs) {
+      print("s id  ... ${s["id"]}");
+      if (s["id"] == docId) {
+        data = s;
+      }
+    }
+    return data;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,13 +78,13 @@ class HabitList extends StatelessWidget {
                     return Padding(
                       padding: EdgeInsets.only(bottom: 16.0),
                       child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HabitProgress(),
-                            ),
+                        onTap: () async {
+                          var data = await _assignValue(
+                            snap.data!.docs[index].id,
                           );
+                          if (data != null) {
+                            navigate(context, data);
+                          }
                         },
                         child: Card(
                           elevation: 5.0,
@@ -77,27 +97,63 @@ class HabitList extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                // Image.asset(""),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(50),
 
-                                  children: [
-                                    Text(
-                                      snap.data!.docs[index]["title"]
-                                          .toString()
-                                          .toUpperCase(),
-                                      style: AppStyle.labelText(),
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      "Duration : ${snap.data!.docs[index]["days"]} days",
-                                      style: AppStyle.hintText(
-                                        color: Colors.black,
+                                  child: Image.asset(
+                                    width: 75.0,
+                                    height: 75.0,
+                                    fit: BoxFit.fill,
+                                    "assets/images/swimming.png",
+                                  ),
+                                ),
+                                SizedBox(width: 8.0),
+                                Flexible(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        snap.data!.docs[index]["title"]
+                                            .toString()
+                                            .toUpperCase(),
+                                        style: AppStyle.labelText(),
                                       ),
-                                    ),
-                                  ],
+                                      SizedBox(height: 8),
+                                      Text(
+                                        "Duration : ${snap.data!.docs[index]["totalDays"]} days",
+                                        style: AppStyle.hintText(
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                SizedBox(width: 8.0),
+                                CustomCircularIndicator(
+                                  currentValue: double.parse(
+                                    snap.data!.docs[index]["completeDays"],
+                                  ),
+                                  totalValue: double.parse(
+                                    snap.data!.docs[index]["totalDays"],
+                                  ),
+                                  size: 60,
+                                ),
+                                SizedBox(width: 8.0),
+                                IconButton(
+                                  onPressed: () async {
+                                    await FirebaseFirestore.instance
+                                        .collection("habit-list")
+                                        .doc(snap.data!.docs[index].id)
+                                        .delete()
+                                        .then((val) async {
+                                          deleteID(snap.data!.docs[index].id);
+                                        });
+                                  },
+                                  icon: Icon(Icons.delete),
                                 ),
                               ],
                             ),
@@ -110,6 +166,28 @@ class HabitList extends StatelessWidget {
               )
             : Center(child: Text("No data", style: AppStyle.labelText()));
       },
+    );
+  }
+
+  Future<void> deleteID(String id) async {
+    print("id .. $id");
+    var snap = await FirebaseFirestore.instance
+        .collection("habit-progress")
+        .get();
+    for (var s in snap.docs) {
+      if (s["id"] == id) {
+        FirebaseFirestore.instance
+            .collection("habit-progress")
+            .doc(s.id)
+            .delete();
+      }
+    }
+  }
+
+  void navigate(BuildContext context, var data) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => HabitProgress(docs: data)),
     );
   }
 }
